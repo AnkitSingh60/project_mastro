@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light ">
+    <button class="btn btn-warning" id="reset" onclick="window.location.reload()">Reset</button>
+  </nav>
+  <p id="output"></p>
+  <div id="selection">
+    <div class="list">
+      <label>Destination 1</label>
+      <select id="0" autocomplete="on" name="planet0" onmousedown="checkList(event)" onchange="selectPlanet(event)">
+        <option selected disabled value="">Select</option>
+      </select>
+      <select disabled id="v0" autocomplete="on" name="v0" onmousedown="checkVehicleList(event)"
+        onchange="selectVehicle(event)">
+        <option selected disabled value="">Select Vehicle</option>
+      </select>
+    </div>
+
+    <div class="list">
+      <label>Destination 2</label>
+      <select id="1" autocomplete="on" name="planet1" onmousedown="checkList(event)" onchange="selectPlanet(event)">
+        <option selected disabled value="">Select</option>
+      </select>
+      <select disabled id="v1" autocomplete="on" name="v1" onmousedown="checkVehicleList(event)"
+        onchange="selectVehicle(event)">
+        <option selected disabled value="">Select Vehicle</option>
+      </select>
+    </div>
+
+    <div class="list">
+      <label>Destination 3</label>
+      <select id="2" autocomplete="on" name="planet2" onmousedown="checkList(event)" onchange="selectPlanet(event)">
+        <option selected disabled value="">Select</option>
+      </select>
+      <select disabled id="v2" autocomplete="on" name="v2" onmousedown="checkVehicleList(event)"
+        onchange="selectVehicle(event)">
+        <option selected disabled value="">Select Vehicle</option>
+      </select>
+    </div>
+
+    <div class="list">
+      <label>Destination 4</label>
+      <select id="3" autocomplete="on" name="planet3" onmousedown="checkList(event)" onchange="selectPlanet(event)">
+        <option selected disabled value="">Select</option>
+      </select>
+      <select disabled id="v3" autocomplete="on" name="v3" onmousedown="checkVehicleList(event)"
+        onchange="selectVehicle(event)">
+        <option selected disabled value="">Select Vehicle</option>
+      </select>
+    </div>
+
+  </div>
+  <br />
+  <button id="trigger" class="btn btn-danger" disabled="true" onclick="trigger(event)">
+    Find
+  </button>
+
+  <div id="time" class="timeDiv">
+    <span id="total_time"></span>
+  </div>
+  <div id="inventory" class="timeDiv">
+  </div>
+
+  <script src="index.js"></script>
+  <script>
+
+    let planets, vehicles;
+    let chosenPlanets = [],
+      chosenVehicles = [];
+    let timeStamps = [];
+
+    (async function () {
+      planets = await getPlanets()
+      vehicles = await getVehicles()
+      populateTable(vehicles)
+      /***********************************************************************/
+      function checkList(event) {
+        createPlanetList(planets, chosenPlanets, event)
+      }
+
+      /***********************************************************************/
+      function selectPlanet(event) { // update selected planets
+        let index = event.target.id
+        chosenPlanets[index] = event.target.value
+        let chosenP = chosenPlanets[index]
+        chosenVehicles[index] = null
+        vehicles = updateVehicleInventory(chosenVehicles, vehicles) // update current No. of vehicles 
+        createVehicleList(vehicles, chosenVehicles, planets[chosenP].distance, event)
+        console.log("Planets:", chosenPlanets)
+      }
+
+      /***********************************************************************/
+      function checkVehicleList(event) {
+        let chosenP = chosenPlanets[event.target.id.slice(-1)]
+        createVehicleList(vehicles, chosenVehicles, planets[chosenP].distance, event)
+      }
+      /***********************************************************************/
+      function selectVehicle(event) {
+        let index = event.target.id.slice(-1)
+        chosenVehicles[index] = event.target.value
+        vehicles = updateVehicleInventory(chosenVehicles, vehicles) // update current No. of vehicles                                    
+
+        let chosenV = chosenVehicles[index]
+        let chosenP = chosenPlanets[index]
+
+        timeStamps = updateTime(timeStamps,  //  Update time 
+          planets[chosenP].distance,
+          vehicles[chosenV].speed,
+          index)
+        checkReady(timeStamps) // check to enable 'find' button
+      }
+      /***********************************************************************/
+      function trigger(event) {
+        document.getElementById(event.target.id).innerText = 'wait...'
+        checkResult(chosenPlanets, chosenVehicles, timeStamps)
+      }
+      window.selectPlanet = selectPlanet
+      window.selectVehicle = selectVehicle
+      window.trigger = trigger
+      window.checkList = checkList
+      window.checkVehicleList = checkVehicleList
+    })()
+
+  </script>
+</body>
+
+</html>
